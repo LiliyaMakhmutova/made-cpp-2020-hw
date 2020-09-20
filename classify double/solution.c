@@ -3,49 +3,41 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-
-
 /**
  * Library-level functions.
  * You should use them in the main sections.
  */
 
-uint64_t convertToUint64(double number) {
+uint64_t convertToUint64(double number) 
+{
     return *((uint64_t*)(&number));
 }
 
-bool getBit(const uint64_t number, const uint8_t index) {
-    uint64_t mask = 1ll << index;
-    uint64_t temp = mask & number;
-    temp >>= index;
-    return temp;
+bool getBit(const uint64_t number, const uint8_t index) 
+{
+    return (number & (1ll << index)) != 0;
 }
 
 bool isExponentZero(const uint64_t number)
 {
-    for (int i = 62; i >= 52; i--)
-    {
-        if (getBit(number, i)) { return false; }
-    }
-    return true;
+    uint64_t tmp = number >> 52;
+    return tmp == 0 || tmp == 2048;
 }
 
 bool isExponentAllOnes(const uint64_t number)
 {
-    for (int i = 62; i >= 52; i--)
-    {
-        if (!getBit(number, i)) { return false; }
-    }
-    return true;
+    uint64_t tmp = number >> 52;
+    return tmp == 2047 || tmp == 4095;
 }
 
 bool isFractionZero(const uint64_t number)
 {
-    for (int i = 51; i >= 0; i--)
-    {
-        if (getBit(number, i)) { return false; }
-    }
-    return true;
+    return ((number << 12) >> 12) == 0;
+}
+
+bool isFractionAllOnes(const uint64_t number)
+{
+    return ((number << 12) >> 12) == 4503599627370495;
 }
 
 bool getSign(const uint64_t number)
@@ -55,7 +47,7 @@ bool getSign(const uint64_t number)
 
 bool isDenormalized(const uint64_t number)
 {
-    return isExponentZero(number) && getBit(number, 0);
+    return isExponentZero(number) && !isFractionZero(number, 0);
 }
 
 bool isNormalized(const uint64_t number)
@@ -105,11 +97,11 @@ bool checkForMinusDenormal(uint64_t number) {
 }
 
 bool checkForSignalingNan(uint64_t number) {
-    return getSign(number) && isExponentAllOnes(number) && !getBit(number,51) && getBit(number, 0);
+    return isExponentAllOnes(number) && !isFractionZero(number) && !isFractionAllOnes(number);
 }
 
 bool checkForQuietNan(uint64_t number) {
-    return getSign(number) && isExponentAllOnes(number) && getBit(number, 51);
+    return isExponentAllOnes(number) && getBit(number, 51);
 }
 
 
