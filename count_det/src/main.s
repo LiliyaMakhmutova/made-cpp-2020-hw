@@ -32,7 +32,7 @@ count_det:
   mul r4, r8
   ldr r8, [r0], #4  
   mul r2, r8
-  mul r5, r8  
+  mul r5, r8 
   ldr r8, [r0], #4  
   mul r1, r8
   mul r6, r8  
