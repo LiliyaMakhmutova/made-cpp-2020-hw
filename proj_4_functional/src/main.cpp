@@ -1,60 +1,44 @@
 #include <functional>
 #include <iostream>
+
 #include "compose.h"
 
-void FailWithMsg(const std::string& msg, int line) {
-  std::cerr << "Test failed!\n";
-  std::cerr << "[Line " << line << "] " << msg << std::endl;
-  std::exit(EXIT_FAILURE);
-}
-
-#define ASSERT_TRUE(cond)                              \
-  if (!(cond)) {                                       \
-    FailWithMsg("Assertion failed: " #cond, __LINE__); \
-  };
-
-
 int main() {
-  const std::function<bool(int)> a = [](int x) -> bool {
-    return x > 10;
-  };
+  const std::function<bool(int)> a = [](int x) -> bool { return x > 10; };
 
-  const std::function<int(float)> b = [](float y) -> int {
-    return int(y * y);
-  };
+  const std::function<int(float)> b = [](float y) -> int { return int(y * y); };
 
   const std::function<float(bool)> c = [](bool z) -> float {
     return z ? 3.1f : 3.34f;
   };
 
-  const std::function<int(int)> inc = [](int z) -> int {
-    return z + 1;
-  };
+  const std::function<int(int)> inc = [](int z) -> int { return z + 1; };
+
+  constexpr int val = 1;
 
   {
-    auto d = compose(inc);
-    auto val = 1;
-    ASSERT_TRUE(d(val) == inc(val));
+    constexpr auto d = compose(inc);
+    static_assert(d(val) == 1, "Error when one function (increment) passed");
   }
 
   {
-    auto d = compose(inc, inc);
-    auto val = 1;
-    ASSERT_TRUE(d(val) == inc(inc(val)));
+    constexpr auto d = compose(inc, inc);
+    constexpr int val = 1;
+    static_assert(d(val) == 2, "Error when two functions (increment) passed");
   }
 
   {
-    auto d = compose(a, inc);
-    auto val = 1;
-    ASSERT_TRUE(d(val) == inc(a(val)));
+    constexpr auto d = compose(a, inc);
+    constexpr int val = 1;
+    static_assert(d(val) == 0,
+                  "Error when two functions (increment and a) passed");
   }
 
   {
-    auto d = compose(a, b, c, a, b, c);
-    auto val = true;
-    ASSERT_TRUE(d(val) == c(b(a(c(b(a(val)))))));
+    constexpr auto d = compose(a, b, c, a, b, c);
+    constexpr int val = 1;
+    static_assert(d(val) == 1, "Error when six functions (a,b,c,a,b,c) passed");
   }
-  
+
   return 0;
 }
-
