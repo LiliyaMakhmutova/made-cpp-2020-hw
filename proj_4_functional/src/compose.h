@@ -2,15 +2,15 @@
 #include <functional>
 
 template <typename R, typename T>
-constexpr decltype(auto) compose(std::function<R(T)> f) {
-  return [=](auto&&... x) -> decltype(auto) {
-    return f(std::forward<decltype(x)>(x)...);
+constexpr std::function<R(T)> compose(const std::function<R(T)>& f) {
+  return [=](T x) -> R {
+    return f(std::forward<T>(x));
   };
 }
 
 template <typename R, typename T, typename... Fs>
-constexpr decltype(auto) compose(std::function<R(T)> f, Fs... fs) {
-  return [=](auto&&... x) -> decltype(auto) {
+constexpr decltype(auto) compose(const std::function<R(T)>& f, const Fs&... fs) {
+  return [=](auto... x) -> decltype(auto) {
     return f(compose(fs...)(std::forward<decltype(x)>(x)...));
   };
 }
